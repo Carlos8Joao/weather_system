@@ -5,27 +5,18 @@ $name = $_POST['name'];
 $email = $_POST['email'];
 $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-$sql = "INSERT INTO users (name, email, password, created_at)
-        VALUES ('$name', '$email', '$password', NOW())";
+// Usando prepared statement
+$stmt = $conn->prepare("INSERT INTO users (name, email, password, created_at) VALUES (?, ?, ?, NOW())");
+$stmt->bind_param("sss", $name, $email, $password);
 
-if ($conn->query($sql) === TRUE) {
-    echo "<!DOCTYPE html>
-    <html lang='pt'>
-    <head>
-      <meta charset='UTF-8'>
-      <title>Registo bem-sucedido</title>
-      <style>
-        .success { color: green; font-weight: bold; margin-top: 20px; }
-      </style>
-    </head>
-    <body>
-      <p class='success'>✅ Utilizador registrado com sucesso!</p>
-      <p><a href='login.php'>🔑 Fazer Login</a></p>
-    </body>
-    </html>";
+if ($stmt->execute()) {
+    echo "<p class='success'>✅ Utilizador registrado com sucesso!</p>";
+    echo "<p><a href='login.php'>🔑 Fazer Login</a></p>";
 } else {
-    echo "Erro: " . $conn->error;
+    echo "<p class='error'>❌ Erro: " . $stmt->error . "</p>";
 }
 
+$stmt->close();
 $conn->close();
 ?>
+

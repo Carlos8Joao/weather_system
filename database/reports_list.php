@@ -16,6 +16,13 @@ $result = $conn->query($sql);
 
 </head>
 <body>
+  <nav>
+  <a href="unified_list.php">📋 Histórico</a> |
+  <a href="reports_form.php">📝 Relatórios</a> |
+  <a href="search_form.php">🔍 Pesquisas</a> |
+  <a href="logout.php">🚪 Logout</a>
+</nav>
+
   <h2>📋 Relatórios Meteorológicos</h2>
   <table>
     <tr>
@@ -41,5 +48,7 @@ $result = $conn->query($sql);
     }
     ?>
   </table>
+  <?php include 'nav.php'; ?>
+
 </body>
 </html>

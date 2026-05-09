@@ -15,6 +15,13 @@ $result = $conn->query($sql);
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <nav>
+  <a href="unified_list.php">📋 Histórico</a> |
+  <a href="reports_form.php">📝 Relatórios</a> |
+  <a href="search_form.php">🔍 Pesquisas</a> |
+  <a href="logout.php">🚪 Logout</a>
+</nav>
+
   <h2>Histórico de Pesquisas</h2>
   <table>
     <tr>
