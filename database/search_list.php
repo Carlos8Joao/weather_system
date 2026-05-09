@@ -12,35 +12,7 @@ $result = $conn->query($sql);
 <head>
   <meta charset="UTF-8">
   <title>Histórico de Pesquisas</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-    }
-    h2 {
-      text-align: center;
-      margin-top: 20px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 80%;
-      margin: 20px auto;
-      background-color: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #4CAF50;
-      color: white;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h2>Histórico de Pesquisas</h2>

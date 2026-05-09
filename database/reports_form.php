@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Adicionar Relatório Meteorológico</title>
+  <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
   <h2>Novo Relatório Meteorológico</h2>

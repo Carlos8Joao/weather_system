@@ -10,29 +10,7 @@ $result = $conn->query($sql);
 <head>
   <meta charset="UTF-8">
   <title>Lista de Utilizadores</title>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 70%;
-      margin: 20px auto;
-      font-family: Arial, sans-serif;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    tr:nth-child(even) {
-      background-color: #fafafa;
-    }
-    h2 {
-      text-align: center;
-      font-family: Arial, sans-serif;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h2>Utilizadores Cadastrados</h2>

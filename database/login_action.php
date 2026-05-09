@@ -20,9 +20,9 @@ if ($result->num_rows > 0) {
         <head>
           <meta charset='UTF-8'>
           <title>Login bem-sucedido</title>
-          <style>
-            .success { color: green; font-weight: bold; margin-top: 20px; }
-          </style>
+          <link rel="stylesheet" href="style.css">
+
+          
         </head>
         <body>
           <p class='success'>✅ Login realizado com sucesso! Bem-vindo, ".$_SESSION['name'].".</p>

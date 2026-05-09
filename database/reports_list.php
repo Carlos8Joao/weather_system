@@ -12,14 +12,8 @@ $result = $conn->query($sql);
 <head>
   <meta charset="UTF-8">
   <title>Relatórios Meteorológicos</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { color: #333; }
-    table { width: 90%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background-color: #4CAF50; color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-  </style>
+<link rel="stylesheet" href="style.css">
+
 </head>
 <body>
   <h2>📋 Relatórios Meteorológicos</h2>

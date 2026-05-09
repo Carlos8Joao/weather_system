@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
-  <h2>Login</h2>
-  <form action="login_action.php" method="post">
-    Email: <input type="email" name="email" required><br><br>
-    Senha: <input type="password" name="password" required><br><br>
-    <input type="submit" value="Entrar">
-  </form>
+  <div class="container">
+    <h2>Login</h2>
+    <form action="login_action.php" method="post">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Senha" required>
+      <input type="submit" value="Entrar">
+    </form>
+  </div>
 </body>
-</html>

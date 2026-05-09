@@ -1,0 +1,107 @@
+/* Fonte e fundo geral */
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+/* Cabeçalhos */
+h1, h2, h3 {
+  color: #333;
+  margin-top: 20px;
+}
+
+/* Container central */
+.container {
+  width: 400px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Formulários */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: none;
+}
+
+/* Botões */
+button, input[type="submit"] {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: #45a049;
+}
+
+/* Tabelas */
+table {
+  width: 90%;
+  border-collapse: collapse;
+  margin: 20px auto;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Mensagens */
+.success {
+  color: green;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+/* Link de navegação */
+a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

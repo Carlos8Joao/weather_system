@@ -29,14 +29,8 @@ $result_reports = $conn->query($sql_reports);
 <head>
   <meta charset="UTF-8">
   <title>Histórico e Relatórios do Utilizador</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { color: #333; margin-top: 40px; }
-    table { width: 90%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background-color: #4CAF50; color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-  </style>
+  <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
   <h1>🌦️ Sistema Meteorológico</h1>
@@ -89,7 +83,7 @@ $result_reports = $conn->query($sql_reports);
     }
     ?>
   </table>
-  
+
   <form action="logout.php" method="post">
   <button type="submit">🚪 Logout</button>
 </form>
