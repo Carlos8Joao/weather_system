@@ -89,5 +89,10 @@ $result_reports = $conn->query($sql_reports);
     }
     ?>
   </table>
+  
+  <form action="logout.php" method="post">
+  <button type="submit">🚪 Logout</button>
+</form>
+
 </body>
 </html>

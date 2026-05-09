@@ -13,14 +13,31 @@ if ($result->num_rows > 0) {
     if (password_verify($password, $row['password'])) {
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['name'] = $row['name'];
-        echo "Login realizado com sucesso!";
         header("Location: unified_list.php");
+        exit;
     } else {
-        echo "Senha incorreta!";
+        $error = "❌ Senha incorreta!";
     }
 } else {
-    echo "Utilizador não encontrado!";
+    $error = "⚠️ Utilizador não encontrado!";
 }
 
 $conn->close();
 ?>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Erro de Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .error { color: red; font-weight: bold; margin-top: 20px; }
+    a { text-decoration: none; color: #4CAF50; }
+  </style>
+</head>
+<body>
+  <h2>Erro no Login</h2>
+  <p class="error"><?php echo $error; ?></p>
+  <p><a href="login.php">🔙 Voltar ao Login</a></p>
+</body>
+</html>
