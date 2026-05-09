@@ -13,7 +13,25 @@ if ($result->num_rows > 0) {
     if (password_verify($password, $row['password'])) {
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['name'] = $row['name'];
-        header("Location: unified_list.php");
+        
+        
+        echo "<!DOCTYPE html>
+        <html lang='pt'>
+        <head>
+          <meta charset='UTF-8'>
+          <title>Login bem-sucedido</title>
+          <style>
+            .success { color: green; font-weight: bold; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <p class='success'>✅ Login realizado com sucesso! Bem-vindo, ".$_SESSION['name'].".</p>
+          <p>Serás redirecionado em 2 segundos...</p>
+          <script>
+            setTimeout(function(){ window.location.href = 'unified_list.php'; }, 2000);
+          </script>
+        </body>
+        </html>";
         exit;
     } else {
         $error = "❌ Senha incorreta!";
@@ -24,20 +42,3 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="UTF-8">
-  <title>Erro de Login</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .error { color: red; font-weight: bold; margin-top: 20px; }
-    a { text-decoration: none; color: #4CAF50; }
-  </style>
-</head>
-<body>
-  <h2>Erro no Login</h2>
-  <p class="error"><?php echo $error; ?></p>
-  <p><a href="login.php">🔙 Voltar ao Login</a></p>
-</body>
-</html>
