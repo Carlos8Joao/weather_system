@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyView — Sistema de Previsão do Tempo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================
+   SKYVIEW — Weather Forecast System
+   Frontend: Angular-style component architecture
+   Backend: PHP REST API (simulated via JS modules)
+   Database: SQL relational (localStorage simulation)
+   Author: Judson Paiva | IPIL 2025/2026
+============================================ */
+
+/* === CSS DESIGN TOKENS === */
+:root {
+  --sky-blue: #0EA5E9;
+  --sky-dark: #0369A1;
+  --sky-light: #E0F2FE;
+  --cloud-white: #F8FAFC;
+  --storm-gray: #475569;
+  --midnight: #0F172A;
+  --dawn: #F1F5F9;
+  --accent: #F59E0B;
+  --danger: #EF4444;
+  --success: #10B981;
+
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-tertiary: #F1F5F9;
+  --bg-card: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --border: rgba(15,23,42,0.1);
+  --border-strong: rgba(15,23,42,0.2);
+  --shadow: 0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.05);
+  --shadow-md: 0 4px 6px rgba(15,23,42,0.07), 0 2px 4px rgba(15,23,42,0.05);
+  --shadow-lg: 0 10px 15px rgba(15,23,42,0.07), 0 4px 6px rgba(15,23,42,0.05);
+
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --bg-card: #1E293B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #475569;
+  --border: rgba(241,245,249,0.08);
+  --border-strong: rgba(241,245,249,0.15);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.25);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
+  --sky-light: #0C4A6E;
+  --cloud-white: #1E293B;
+  --dawn: #1E293B;
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.2; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+h2 { font-size: clamp(1.3rem, 3vw, 1.8rem); }
+h3 { font-size: 1.1rem; }
+
+/* === LAYOUT === */
+.app-container { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* === AUTH PAGES === */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #0EA5E9 0%, #0369A1 50%, #0F172A 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.auth-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.auth-logo .logo-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--sky-blue), var(--sky-dark));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.auth-logo .logo-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.auth-logo .logo-text span { color: var(--sky-blue); }
+
+.auth-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.8rem; }
+
+/* === FORM ELEMENTS === */
+.form-group { margin-bottom: 1rem; }
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--sky-blue);
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+.form-input::placeholder { color: var(--text-muted); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+/* === BUTTONS === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--sky-blue), var(--sky-dark));
+  color: white;
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+}
+
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(14,165,233,0.45); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-strong);
+}
+
+.btn-ghost:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.85rem; border-radius: 6px; }
+.btn-icon { padding: 0.6rem; border-radius: var(--radius-sm); aspect-ratio: 1; }
+
+.btn-danger { background: var(--danger); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-accent { background: var(--accent); color: white; }
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.auth-switch a { color: var(--sky-blue); text-decoration: none; font-weight: 500; cursor: pointer; }
+.auth-switch a:hover { text-decoration: underline; }
+
+.auth-error {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--danger);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+
+.auth-error.show { display: block; animation: slideUp 0.2s ease; }
+
+/* === MAIN APP LAYOUT === */
+.app-layout {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-layout.active { display: flex; }
+
+/* === NAVBAR === */
+.navbar {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.nav-logo .logo-dot { color: var(--sky-blue); }
+
+.nav-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.nav-tab {
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-tab.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow); }
+.nav-tab:hover:not(.active) { color: var(--text-primary); }
+
+.nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.nav-user .avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sky-blue), var(--sky-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.nav-user .user-name { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); }
+
+.theme-toggle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  transition: background 0.2s;
+  color: var(--text-primary);
+}
+
+.theme-toggle:hover { background: var(--bg-tertiary); }
+
+.lang-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* === MAIN CONTENT === */
+.main-content { flex: 1; padding: 2rem; max-width: 1280px; margin: 0 auto; width: 100%; }
+
+/* === SECTION PAGES === */
+.page-section { display: none; animation: fadeIn 0.3s ease; }
+.page-section.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === HERO SEARCH === */
+.hero-search {
+  background: linear-gradient(135deg, #0EA5E9 0%, #0369A1 60%, #0F172A 100%);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.hero-search::after {
+  content: '☁';
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8rem;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.hero-search h2 { color: white; margin-bottom: 0.5rem; font-size: 1.5rem; }
+.hero-search p { color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; font-size: 0.9rem; }
+
+.search-bar {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 560px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.search-input::placeholder { color: rgba(255,255,255,0.5); }
+.search-input:focus { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
+
+.btn-search {
+  background: white;
+  color: var(--sky-dark);
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-search:hover { background: rgba(255,255,255,0.9); transform: translateY(-1px); }
+
+/* === WEATHER CARDS === */
+.weather-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+
+.weather-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.weather-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.weather-card .city-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.weather-card .country { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+.weather-card .weather-icon { font-size: 2.5rem; line-height: 1; }
+
+.weather-card .temp-display {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.weather-card .temp-main {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.weather-card .temp-unit { font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 0.4rem; }
+
+.weather-card .condition {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.weather-card .weather-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.detail-value { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+
+.card-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+/* === FORECAST SECTION === */
+.forecast-strip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.forecast-strip h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.2rem;
+}
+
+.forecast-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+
+.forecast-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+  cursor: default;
+}
+
+.forecast-day:hover { background: var(--bg-secondary); }
+.forecast-day.today { background: var(--sky-light); border: 1px solid rgba(14,165,233,0.2); }
+
+.forecast-day .day-name { font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+.forecast-day .day-icon { font-size: 1.4rem; }
+.forecast-day .day-high { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.forecast-day .day-low { font-size: 0.8rem; color: var(--text-muted); }
+
+/* === DASHBOARD STATS === */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.stat-card .stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat-icon.blue { background: rgba(14,165,233,0.12); color: var(--sky-blue); }
+.stat-icon.amber { background: rgba(245,158,11,0.12); color: var(--accent); }
+.stat-icon.green { background: rgba(16,185,129,0.12); color: var(--success); }
+.stat-icon.red { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+.stat-card .stat-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* === TABLE === */
+.data-table-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+.table-actions { display: flex; gap: 0.5rem; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg-secondary); }
+
+/* === BADGES === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-blue { background: rgba(14,165,233,0.12); color: var(--sky-blue); }
+.badge-green { background: rgba(16,185,129,0.12); color: var(--success); }
+.badge-amber { background: rgba(245,158,11,0.12); color: var(--accent); }
+.badge-red { background: rgba(239,68,68,0.12); color: var(--danger); }
+.badge-gray { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+/* === PROFILE/SETTINGS === */
+.settings-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
+
+.settings-nav {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  height: fit-content;
+  box-shadow: var(--shadow);
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+}
+
+.settings-nav-item.active { background: var(--sky-light); color: var(--sky-dark); font-weight: 500; }
+.settings-nav-item:hover:not(.active) { background: var(--bg-secondary); color: var(--text-primary); }
+
+.settings-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.settings-section { margin-bottom: 2rem; }
+.settings-section h3 { margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--text-primary); font-size: 1rem; }
+
+/* === ALERT === */
+.alert {
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.alert-success { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+.alert-info { background: rgba(14,165,233,0.1); color: var(--sky-blue); border: 1px solid rgba(14,165,233,0.2); }
+.alert-warning { background: rgba(245,158,11,0.1); color: var(--accent); border: 1px solid rgba(245,158,11,0.2); }
+
+/* === MODAL === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.modal-header h3 { font-size: 1.2rem; }
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.modal-close:hover { color: var(--text-primary); }
+
+/* === PAGE HEADER === */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-header h2 { margin-bottom: 0.25rem; }
+.page-header p { font-size: 0.9rem; color: var(--text-secondary); }
+.page-header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+/* === ALERTS SECTION === */
+.alerts-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.alert-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.alert-item.critical { border-left: 3px solid var(--danger); }
+.alert-item.warning { border-left: 3px solid var(--accent); }
+.alert-item.info { border-left: 3px solid var(--sky-blue); }
+
+.alert-info-block { flex: 1; }
+.alert-info-block .alert-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
+.alert-info-block .alert-desc { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .main-content { padding: 1rem; }
+  .forecast-days { grid-template-columns: repeat(4, 1fr); }
+  .settings-grid { grid-template-columns: 1fr; }
+  .nav-tabs { display: none; }
+  .form-row { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; }
+  .search-bar { flex-direction: column; }
+}
+
+/* === LOADING === */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.spinner {
+  width: 24px; height: 24px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--sky-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === FAVORITES GRID === */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+.empty-state p { font-size: 0.9rem; }
+
+/* === CHART PLACEHOLDER === */
+.chart-area {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.chart-area h3 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.5rem; font-weight: 600; }
+
+.temp-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+
+.temp-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.temp-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 4px 4px 0 0;
+  transition: opacity 0.2s;
+}
+
+.temp-bar:hover { opacity: 0.8; }
+.temp-bar-high { background: linear-gradient(to top, var(--sky-blue), #38BDF8); }
+.temp-bar-low { background: var(--bg-tertiary); }
+.temp-bar-label { font-size: 0.7rem; color: var(--text-muted); }
+.temp-bar-val { font-size: 0.75rem; font-weight: 600; color: var(--text-primary); }
+
+/* === ROLE BADGE === */
+.role-admin { background: rgba(239,68,68,0.1); color: var(--danger); }
+.role-user { background: rgba(14,165,233,0.1); color: var(--sky-blue); }
+
+/* === PASSWORD RECOVERY === */
+.recovery-info {
+  background: rgba(14,165,233,0.08);
+  border: 1px solid rgba(14,165,233,0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  font-size: 0.88rem;
+  color: var(--sky-dark);
+  margin-bottom: 1.2rem;
+}
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     AUTHENTICATION PAGES
+     Simulates PHP backend: /api/auth/login.php
+                            /api/auth/register.php
+                            /api/auth/recover.php
+============================================= -->
+
+<!-- LOGIN PAGE -->
+<div class="auth-page" id="page-login">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🌤️</div>
+      <div class="logo-text">Sky<span>View</span></div>
+    </div>
+    <p class="auth-subtitle" data-i18n="login.subtitle">Aceda à sua conta para continuar</p>
+
+    <div class="auth-error" id="login-error"></div>
+
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.email">Endereço de e-mail</label>
+      <input class="form-input" type="email" id="login-email" placeholder="nome@exemplo.com" autocomplete="email"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.password">Palavra-passe</label>
+      <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div style="text-align:right; margin-bottom:1.2rem;">
+      <a style="font-size:0.85rem; color:var(--sky-blue); cursor:pointer; text-decoration:none;" onclick="showPage('page-recover')" data-i18n="login.forgot">Esqueceu a palavra-passe?</a>
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" data-i18n="login.btn">Entrar na conta</button>
+    <div class="auth-switch"><span data-i18n="login.noAccount">Não tem conta?</span> <a onclick="showPage('page-register')" data-i18n="login.register">Criar conta</a></div>
+    <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text-muted); text-align:center;">
+      <span data-i18n="login.demo">Demo:</span> admin@skyview.ao / admin123 &nbsp;|&nbsp; user@skyview.ao / user123
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div class="auth-page" id="page-register" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🌤️</div>
+      <div class="logo-text">Sky<span>View</span></div>
+    </div>
+    <p class="auth-subtitle" data-i18n="register.subtitle">Crie a sua conta gratuitamente</p>
+
+    <div class="auth-error" id="register-error"></div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="label.firstName">Nome</label>
+        <input class="form-input" type="text" id="reg-firstname" placeholder="João"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="label.lastName">Apelido</label>
+        <input class="form-input" type="text" id="reg-lastname" placeholder="Silva"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.email">Endereço de e-mail</label>
+      <input class="form-input" type="email" id="reg-email" placeholder="nome@exemplo.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.password">Palavra-passe</label>
+      <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 6 caracteres"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.confirmPassword">Confirmar palavra-passe</label>
+      <input class="form-input" type="password" id="reg-password2" placeholder="Repita a palavra-passe"/>
+    </div>
+    <button class="btn btn-primary" onclick="doRegister()" data-i18n="register.btn">Criar conta</button>
+    <div class="auth-switch"><span data-i18n="register.haveAccount">Já tem conta?</span> <a onclick="showPage('page-login')" data-i18n="login.btn2">Entrar</a></div>
+  </div>
+</div>
+
+<!-- RECOVER PAGE -->
+<div class="auth-page" id="page-recover" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🔑</div>
+      <div class="logo-text">Sky<span>View</span></div>
+    </div>
+    <p class="auth-subtitle" data-i18n="recover.subtitle">Recuperação de palavra-passe</p>
+    <div class="recovery-info" data-i18n="recover.info">Introduza o seu e-mail e receberá instruções para redefinir a sua palavra-passe.</div>
+    <div class="auth-error" id="recover-error"></div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label.email">Endereço de e-mail</label>
+      <input class="form-input" type="email" id="recover-email" placeholder="nome@exemplo.com"/>
+    </div>
+    <button class="btn btn-primary" onclick="doRecover()" data-i18n="recover.btn">Enviar instruções</button>
+    <div class="auth-switch"><a onclick="showPage('page-login')" data-i18n="recover.back">← Voltar ao login</a></div>
+  </div>
+</div>
+
+<!-- =============================================
+     MAIN APPLICATION
+     Angular-style: NavbarComponent, PagesModule
+     Communicates with backend via fetch() → JSON
+============================================= -->
+<div class="app-layout" id="app-layout">
+
+  <!-- NavbarComponent -->
+  <nav class="navbar">
+    <div class="nav-logo">🌤️ Sky<span class="nav-logo" style="color:var(--sky-blue);font-family:var(--font-display);font-weight:800;">View</span></div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('dashboard')" id="tab-dashboard" data-i18n="nav.dashboard">Dashboard</button>
+      <button class="nav-tab" onclick="switchTab('forecast')" id="tab-forecast" data-i18n="nav.forecast">Previsão</button>
+      <button class="nav-tab" onclick="switchTab('favorites')" id="tab-favorites" data-i18n="nav.favorites">Favoritos</button>
+      <button class="nav-tab" onclick="switchTab('alerts')" id="tab-alerts" data-i18n="nav.alerts">Alertas</button>
+      <button class="nav-tab" id="tab-admin" onclick="switchTab('admin')" style="display:none;" data-i18n="nav.admin">Admin</button>
+      <button class="nav-tab" onclick="switchTab('profile')" id="tab-profile" data-i18n="nav.profile">Perfil</button>
+    </div>
+
+    <div class="nav-actions">
+      <select class="lang-select" id="lang-selector" onchange="setLanguage(this.value)">
+        <option value="pt">🇵🇹 PT</option>
+        <option value="en">🇬🇧 EN</option>
+      </select>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Alternar tema">🌙</button>
+      <div class="nav-user" onclick="switchTab('profile')">
+        <div class="avatar" id="nav-avatar">JP</div>
+        <span class="user-name" id="nav-username">Judson</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()" data-i18n="nav.logout">Sair</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ==========================================
+         DASHBOARD PAGE — DashboardComponent
+    ========================================== -->
+    <section class="page-section active" id="section-dashboard">
+      <div class="hero-search">
+        <h2 data-i18n="dashboard.title">Previsão do Tempo</h2>
+        <p data-i18n="dashboard.sub">Pesquise qualquer cidade do mundo e obtenha previsões detalhadas</p>
+        <div class="search-bar">
+          <input class="search-input" type="text" id="city-search" placeholder="Pesquisar cidade..." data-i18n-placeholder="dashboard.searchPlaceholder" onkeydown="if(event.key==='Enter')searchCity()"/>
+          <button class="btn-search" onclick="searchCity()" data-i18n="dashboard.searchBtn">🔍 Pesquisar</button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">🌍</div>
+          <div class="stat-value" id="stat-cities">5</div>
+          <div class="stat-label" data-i18n="stat.cities">Cidades monitoradas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">⭐</div>
+          <div class="stat-value" id="stat-favs">0</div>
+          <div class="stat-label" data-i18n="stat.favs">Favoritos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">🚨</div>
+          <div class="stat-value" id="stat-alerts">3</div>
+          <div class="stat-label" data-i18n="stat.alerts">Alertas activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📊</div>
+          <div class="stat-value">7</div>
+          <div class="stat-label" data-i18n="stat.days">Dias de previsão</div>
+        </div>
+      </div>
+
+      <!-- Weather Cards Grid -->
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="dashboard.cityCards">Cidades Monitoradas</h2>
+          <p data-i18n="dashboard.cityCardsSub">Dados actualizados via API externa OpenWeatherMap</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()" data-i18n="export.csv">📄 Exportar CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPDF()" data-i18n="export.pdf">📋 Exportar PDF</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddCityModal()" data-i18n="dashboard.addCity">+ Adicionar Cidade</button>
+        </div>
+      </div>
+
+      <div class="weather-grid" id="weather-grid"></div>
+    </section>
+
+    <!-- ==========================================
+         FORECAST PAGE — ForecastComponent
+    ========================================== -->
+    <section class="page-section" id="section-forecast">
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="forecast.title">Previsão Semanal</h2>
+          <p data-i18n="forecast.sub">Próximos 7 dias para as suas cidades</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()" data-i18n="export.csv">📄 Exportar CSV</button>
+        </div>
+      </div>
+
+      <div id="forecast-list"></div>
+    </section>
+
+    <!-- ==========================================
+         FAVORITES PAGE — FavoritesComponent
+    ========================================== -->
+    <section class="page-section" id="section-favorites">
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="favorites.title">Cidades Favoritas</h2>
+          <p data-i18n="favorites.sub">As suas cidades guardadas</p>
+        </div>
+      </div>
+      <div class="weather-grid" id="favorites-grid"></div>
+    </section>
+
+    <!-- ==========================================
+         ALERTS PAGE — AlertsComponent
+    ========================================== -->
+    <section class="page-section" id="section-alerts">
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="alerts.title">Alertas Meteorológicos</h2>
+          <p data-i18n="alerts.sub">Notificações de condições severas</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAlertModal()" data-i18n="alerts.add">+ Novo Alerta</button>
+        </div>
+      </div>
+      <div class="alerts-list" id="alerts-list"></div>
+    </section>
+
+    <!-- ==========================================
+         ADMIN PAGE — AdminComponent (role: admin)
+    ========================================== -->
+    <section class="page-section" id="section-admin">
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="admin.title">Painel de Administração</h2>
+          <p data-i18n="admin.sub">Gestão de utilizadores e dados do sistema</p>
+        </div>
+      </div>
+
+      <div class="data-table-container">
+        <div class="table-header">
+          <h3 data-i18n="admin.users">Utilizadores Registados</h3>
+          <div class="table-actions">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV()" data-i18n="export.csv">📄 CSV</button>
+          </div>
+        </div>
+        <table class="data-table" id="admin-users-table">
+          <thead>
+            <tr>
+              <th data-i18n="table.id">ID</th>
+              <th data-i18n="table.name">Nome</th>
+              <th data-i18n="table.email">E-mail</th>
+              <th data-i18n="table.role">Função</th>
+              <th data-i18n="table.registered">Registado em</th>
+              <th data-i18n="table.actions">Acções</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-body"></tbody>
+        </table>
+      </div>
+
+      <div class="data-table-container">
+        <div class="table-header">
+          <h3 data-i18n="admin.searches">Pesquisas Recentes</h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="table.city">Cidade</th>
+              <th data-i18n="table.user">Utilizador</th>
+              <th data-i18n="table.date">Data</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="admin-searches-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         PROFILE PAGE — ProfileComponent
+    ========================================== -->
+    <section class="page-section" id="section-profile">
+      <div class="page-header">
+        <div>
+          <h2 data-i18n="profile.title">Perfil & Definições</h2>
+          <p data-i18n="profile.sub">Gerencie as suas informações e preferências</p>
+        </div>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-nav">
+          <button class="settings-nav-item active" onclick="switchSettings('personal')" data-i18n="settings.personal">👤 Dados Pessoais</button>
+          <button class="settings-nav-item" onclick="switchSettings('security')" data-i18n="settings.security">🔐 Segurança</button>
+          <button class="settings-nav-item" onclick="switchSettings('preferences')" data-i18n="settings.preferences">⚙️ Preferências</button>
+          <button class="settings-nav-item" onclick="switchSettings('export')" data-i18n="settings.export">📤 Exportar Dados</button>
+        </div>
+        <div class="settings-content">
+          <div id="settings-personal">
+            <div class="settings-section">
+              <h3 data-i18n="settings.personal">Dados Pessoais</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="label.firstName">Nome</label>
+                  <input class="form-input" id="profile-firstname" type="text"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="label.lastName">Apelido</label>
+                  <input class="form-input" id="profile-lastname" type="text"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="label.email">E-mail</label>
+                <input class="form-input" id="profile-email" type="email"/>
+              </div>
+              <div id="profile-alert" style="display:none;"></div>
+              <button class="btn btn-primary" style="width:auto; padding:0.7rem 1.5rem;" onclick="saveProfile()" data-i18n="settings.save">Guardar alterações</button>
+            </div>
+          </div>
+
+          <div id="settings-security" style="display:none;">
+            <div class="settings-section">
+              <h3 data-i18n="settings.security">Segurança</h3>
+              <div class="form-group">
+                <label class="form-label" data-i18n="label.currentPassword">Palavra-passe actual</label>
+                <input class="form-input" type="password" id="curr-pw"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="label.newPassword">Nova palavra-passe</label>
+                <input class="form-input" type="password" id="new-pw"/>
+              </div>
+              <div id="security-alert" style="display:none;"></div>
+              <button class="btn btn-primary" style="width:auto; padding:0.7rem 1.5rem;" onclick="changePassword()" data-i18n="settings.changePassword">Alterar palavra-passe</button>
+            </div>
+          </div>
+
+          <div id="settings-preferences" style="display:none;">
+            <div class="settings-section">
+              <h3 data-i18n="settings.preferences">Preferências</h3>
+              <div class="form-group">
+                <label class="form-label" data-i18n="pref.units">Unidades de temperatura</label>
+                <select class="form-input" id="pref-units" onchange="savePref('units', this.value)">
+                  <option value="C">Celsius (°C)</option>
+                  <option value="F">Fahrenheit (°F)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="pref.lang">Idioma preferido</label>
+                <select class="form-input" id="pref-lang" onchange="setLanguage(this.value); document.getElementById('lang-selector').value=this.value;">
+                  <option value="pt">Português</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="pref.theme">Tema</label>
+                <select class="form-input" id="pref-theme" onchange="if(this.value!==document.documentElement.getAttribute('data-theme')) toggleTheme()">
+                  <option value="light">☀️ Claro</option>
+                  <option value="dark">🌙 Escuro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div id="settings-export" style="display:none;">
+            <div class="settings-section">
+              <h3 data-i18n="settings.export">Exportar Dados</h3>
+              <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1.5rem;" data-i18n="export.desc">Exporte os dados das suas cidades favoritas e histórico de pesquisas.</p>
+              <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <button class="btn btn-ghost" onclick="exportCSV()" style="gap:0.5rem;">📄 <span data-i18n="export.csv">Exportar CSV</span></button>
+                <button class="btn btn-ghost" onclick="exportPDF()" style="gap:0.5rem;">📋 <span data-i18n="export.pdf">Exportar PDF</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ==========================================
+     MODALS — ModalService
+========================================== -->
+
+<!-- Add City Modal -->
+<div class="modal-overlay" id="modal-add-city">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 data-i18n="modal.addCity">Adicionar Cidade</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-city')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.cityName">Nome da cidade</label>
+      <input class="form-input" type="text" id="new-city-name" placeholder="ex: Paris, Londres, Lisboa..."/>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.country">País</label>
+      <input class="form-input" type="text" id="new-city-country" placeholder="ex: França, Angola..."/>
+    </div>
+    <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-city')" data-i18n="modal.cancel">Cancelar</button>
+      <button class="btn btn-primary" style="width:auto;" onclick="addCity()" data-i18n="modal.add">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Alert Modal -->
+<div class="modal-overlay" id="modal-alert">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 data-i18n="modal.newAlert">Novo Alerta Meteorológico</h3>
+      <button class="modal-close" onclick="closeModal('modal-alert')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.alertCity">Cidade</label>
+      <select class="form-input" id="alert-city"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.alertType">Tipo de alerta</label>
+      <select class="form-input" id="alert-type">
+        <option value="chuva">🌧️ Chuva forte</option>
+        <option value="vento">💨 Vento forte</option>
+        <option value="trovoada">⛈️ Trovoada</option>
+        <option value="calor">🌡️ Calor extremo</option>
+        <option value="frio">❄️ Frio extremo</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.alertThreshold">Limiar</label>
+      <input class="form-input" type="text" id="alert-threshold" placeholder="ex: > 35°C, > 50 km/h"/>
+    </div>
+    <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-alert')" data-i18n="modal.cancel">Cancelar</button>
+      <button class="btn btn-primary" style="width:auto;" onclick="addAlert()" data-i18n="modal.save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     APPLICATION LOGIC
+     Simulates Angular Services + PHP API
+     Database layer: localStorage (SQL simulation)
+========================================== -->
+<script>
+/* ============================================================
+   DATABASE SERVICE (simulates SQL tables via localStorage)
+   Tables: users, cities, favorites, alerts, search_log
+   Operations: CREATE, READ, UPDATE, DELETE (full CRUD)
+============================================================ */
+const DB = {
+  get(table) { return JSON.parse(localStorage.getItem('sv_' + table) || '[]'); },
+  set(table, data) { localStorage.setItem('sv_' + table, JSON.stringify(data)); },
+  find(table, fn) { return DB.get(table).find(fn); },
+  filter(table, fn) { return DB.get(table).filter(fn); },
+  insert(table, row) {
+    const rows = DB.get(table);
+    row.id = row.id || Date.now();
+    rows.push(row);
+    DB.set(table, rows);
+    return row;
+  },
+  update(table, id, updates) {
+    const rows = DB.get(table).map(r => r.id === id ? {...r, ...updates} : r);
+    DB.set(table, rows);
+  },
+  delete(table, id) { DB.set(table, DB.get(table).filter(r => r.id !== id)); }
+};
+
+/* Seed initial data */
+function seedDatabase() {
+  if (DB.find('users', u => u.email === 'admin@skyview.ao')) return;
+
+  DB.insert('users', { id: 1, firstName: 'Admin', lastName: 'Sistema', email: 'admin@skyview.ao', password: 'admin123', role: 'admin', createdAt: '2025-01-01' });
+  DB.insert('users', { id: 2, firstName: 'Judson', lastName: 'Paiva', email: 'user@skyview.ao', password: 'user123', role: 'user', createdAt: '2025-01-15' });
+
+  const defaultCities = [
+    { id: 10, name: 'Luanda', country: 'Angola', temp: 28, condition: 'Parcialmente nublado', humidity: 72, wind: 18, icon: '⛅', feelsLike: 31, pressure: 1012, visibility: 10 },
+    { id: 11, name: 'Lisboa', country: 'Portugal', temp: 19, condition: 'Ensolarado', humidity: 55, wind: 12, icon: '☀️', feelsLike: 18, pressure: 1018, visibility: 20 },
+    { id: 12, name: 'Londres', country: 'Reino Unido', temp: 12, condition: 'Chuvoso', humidity: 85, wind: 25, icon: '🌧️', feelsLike: 9, pressure: 1008, visibility: 8 },
+    { id: 13, name: 'Paris', country: 'França', temp: 16, condition: 'Nublado', humidity: 68, wind: 14, icon: '☁️', feelsLike: 14, pressure: 1015, visibility: 15 },
+    { id: 14, name: 'Nova Iorque', country: 'EUA', temp: 22, condition: 'Ensolarado', humidity: 45, wind: 20, icon: '☀️', feelsLike: 21, pressure: 1020, visibility: 25 }
+  ];
+  defaultCities.forEach(c => DB.insert('cities', c));
+
+  DB.insert('alerts', { id: 100, city: 'Luanda', type: 'calor', description: 'Calor extremo previsto', threshold: '> 35°C', severity: 'critical', createdAt: '2025-05-09' });
+  DB.insert('alerts', { id: 101, city: 'Londres', type: 'chuva', description: 'Chuva intensa', threshold: '> 20 mm/h', severity: 'warning', createdAt: '2025-05-10' });
+  DB.insert('alerts', { id: 102, city: 'Paris', type: 'vento', description: 'Vento forte', threshold: '> 60 km/h', severity: 'info', createdAt: '2025-05-10' });
+
+  DB.insert('search_log', { city: 'Luanda', userId: 1, date: '2025-05-10 08:30', status: 'success' });
+  DB.insert('search_log', { city: 'Lisboa', userId: 2, date: '2025-05-10 09:15', status: 'success' });
+  DB.insert('search_log', { city: 'Cabinda', userId: 2, date: '2025-05-10 10:00', status: 'not_found' });
+}
+
+/* ============================================================
+   AUTH SERVICE — Simulates /api/auth/*.php
+============================================================ */
+let currentUser = null;
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+
+  if (!email || !pw) { showError(errEl, t('error.fillAll')); return; }
+
+  const user = DB.find('users', u => u.email === email && u.password === pw);
+  if (!user) { showError(errEl, t('error.invalidCredentials')); return; }
+
+  currentUser = user;
+  sessionStorage.setItem('sv_session', JSON.stringify(user));
+  initApp();
+}
+
+function doRegister() {
+  const fn = document.getElementById('reg-firstname').value.trim();
+  const ln = document.getElementById('reg-lastname').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-password').value;
+  const pw2 = document.getElementById('reg-password2').value;
+  const errEl = document.getElementById('register-error');
+
+  if (!fn || !ln || !email || !pw) { showError(errEl, t('error.fillAll')); return; }
+  if (pw !== pw2) { showError(errEl, t('error.passwordMismatch')); return; }
+  if (pw.length < 6) { showError(errEl, t('error.passwordShort')); return; }
+  if (DB.find('users', u => u.email === email)) { showError(errEl, t('error.emailExists')); return; }
+
+  const user = DB.insert('users', { firstName: fn, lastName: ln, email, password: pw, role: 'user', createdAt: new Date().toISOString().split('T')[0] });
+  currentUser = user;
+  sessionStorage.setItem('sv_session', JSON.stringify(user));
+  initApp();
+}
+
+function doRecover() {
+  const email = document.getElementById('recover-email').value.trim();
+  const errEl = document.getElementById('recover-error');
+  if (!email) { showError(errEl, t('error.fillAll')); return; }
+  errEl.className = 'auth-error show';
+  errEl.style.background = 'rgba(16,185,129,0.1)';
+  errEl.style.color = 'var(--success)';
+  errEl.style.borderColor = 'rgba(16,185,129,0.3)';
+  errEl.textContent = '✅ ' + t('recover.sent');
+}
+
+function doLogout() {
+  currentUser = null;
+  sessionStorage.removeItem('sv_session');
+  document.getElementById('app-layout').classList.remove('active');
+  showPage('page-login');
+}
+
+/* ============================================================
+   INTERNATIONALISATION SERVICE — i18nService
+============================================================ */
+const translations = {
+  pt: {
+    'login.subtitle': 'Aceda à sua conta para continuar',
+    'login.forgot': 'Esqueceu a palavra-passe?',
+    'login.btn': 'Entrar na conta',
+    'login.btn2': 'Entrar',
+    'login.noAccount': 'Não tem conta?',
+    'login.register': 'Criar conta',
+    'login.demo': 'Demo:',
+    'register.subtitle': 'Crie a sua conta gratuitamente',
+    'register.btn': 'Criar conta',
+    'register.haveAccount': 'Já tem conta?',
+    'recover.subtitle': 'Recuperação de palavra-passe',
+    'recover.info': 'Introduza o seu e-mail e receberá instruções para redefinir a sua palavra-passe.',
+    'recover.btn': 'Enviar instruções',
+    'recover.back': '← Voltar ao login',
+    'recover.sent': 'Instruções enviadas! Verifique o seu e-mail.',
+    'label.email': 'Endereço de e-mail',
+    'label.password': 'Palavra-passe',
+    'label.firstName': 'Nome',
+    'label.lastName': 'Apelido',
+    'label.confirmPassword': 'Confirmar palavra-passe',
+    'label.currentPassword': 'Palavra-passe actual',
+    'label.newPassword': 'Nova palavra-passe',
+    'nav.dashboard': 'Dashboard',
+    'nav.forecast': 'Previsão',
+    'nav.favorites': 'Favoritos',
+    'nav.alerts': 'Alertas',
+    'nav.admin': 'Admin',
+    'nav.profile': 'Perfil',
+    'nav.logout': 'Sair',
+    'dashboard.title': 'Previsão do Tempo',
+    'dashboard.sub': 'Pesquise qualquer cidade do mundo e obtenha previsões detalhadas',
+    'dashboard.searchBtn': '🔍 Pesquisar',
+    'dashboard.searchPlaceholder': 'Pesquisar cidade...',
+    'dashboard.cityCards': 'Cidades Monitoradas',
+    'dashboard.cityCardsSub': 'Dados actualizados via API externa OpenWeatherMap',
+    'dashboard.addCity': '+ Adicionar Cidade',
+    'forecast.title': 'Previsão Semanal',
+    'forecast.sub': 'Próximos 7 dias para as suas cidades',
+    'favorites.title': 'Cidades Favoritas',
+    'favorites.sub': 'As suas cidades guardadas',
+    'alerts.title': 'Alertas Meteorológicos',
+    'alerts.sub': 'Notificações de condições severas',
+    'alerts.add': '+ Novo Alerta',
+    'admin.title': 'Painel de Administração',
+    'admin.sub': 'Gestão de utilizadores e dados do sistema',
+    'admin.users': 'Utilizadores Registados',
+    'admin.searches': 'Pesquisas Recentes',
+    'profile.title': 'Perfil & Definições',
+    'profile.sub': 'Gerencie as suas informações e preferências',
+    'settings.personal': '👤 Dados Pessoais',
+    'settings.security': '🔐 Segurança',
+    'settings.preferences': '⚙️ Preferências',
+    'settings.export': '📤 Exportar Dados',
+    'settings.save': 'Guardar alterações',
+    'settings.changePassword': 'Alterar palavra-passe',
+    'stat.cities': 'Cidades monitoradas',
+    'stat.favs': 'Favoritos',
+    'stat.alerts': 'Alertas activos',
+    'stat.days': 'Dias de previsão',
+    'export.csv': 'Exportar CSV',
+    'export.pdf': 'Exportar PDF',
+    'export.desc': 'Exporte os dados das suas cidades favoritas e histórico de pesquisas.',
+    'modal.addCity': 'Adicionar Cidade',
+    'modal.cityName': 'Nome da cidade',
+    'modal.country': 'País',
+    'modal.cancel': 'Cancelar',
+    'modal.add': 'Adicionar',
+    'modal.newAlert': 'Novo Alerta Meteorológico',
+    'modal.alertCity': 'Cidade',
+    'modal.alertType': 'Tipo de alerta',
+    'modal.alertThreshold': 'Limiar',
+    'modal.save': 'Guardar',
+    'pref.units': 'Unidades de temperatura',
+    'pref.lang': 'Idioma preferido',
+    'pref.theme': 'Tema',
+    'table.id': 'ID',
+    'table.name': 'Nome',
+    'table.email': 'E-mail',
+    'table.role': 'Função',
+    'table.registered': 'Registado em',
+    'table.actions': 'Acções',
+    'table.city': 'Cidade',
+    'table.user': 'Utilizador',
+    'table.date': 'Data',
+    'error.fillAll': 'Por favor, preencha todos os campos.',
+    'error.invalidCredentials': 'E-mail ou palavra-passe incorrectos.',
+    'error.passwordMismatch': 'As palavras-passe não coincidem.',
+    'error.passwordShort': 'A palavra-passe deve ter pelo menos 6 caracteres.',
+    'error.emailExists': 'Este e-mail já está registado.',
+    'weather.humidity': 'Humidade',
+    'weather.wind': 'Vento',
+    'weather.feelsLike': 'Sensação',
+    'weather.pressure': 'Pressão',
+    'weather.visibility': 'Visibilidade',
+    'weather.favorite': '⭐ Favorito',
+    'weather.unfavorite': '★ Remover',
+    'weather.delete': '🗑️',
+    'forecast.label': 'Previsão 7 dias',
+    'alerts.delete': 'Remover',
+    'alerts.active': 'Activo',
+  },
+  en: {
+    'login.subtitle': 'Sign in to your account',
+    'login.forgot': 'Forgot password?',
+    'login.btn': 'Sign in',
+    'login.btn2': 'Sign in',
+    'login.noAccount': 'No account?',
+    'login.register': 'Create account',
+    'login.demo': 'Demo:',
+    'register.subtitle': 'Create your free account',
+    'register.btn': 'Create account',
+    'register.haveAccount': 'Already have an account?',
+    'recover.subtitle': 'Password recovery',
+    'recover.info': 'Enter your email and you will receive instructions to reset your password.',
+    'recover.btn': 'Send instructions',
+    'recover.back': '← Back to login',
+    'recover.sent': 'Instructions sent! Check your email.',
+    'label.email': 'Email address',
+    'label.password': 'Password',
+    'label.firstName': 'First name',
+    'label.lastName': 'Last name',
+    'label.confirmPassword': 'Confirm password',
+    'label.currentPassword': 'Current password',
+    'label.newPassword': 'New password',
+    'nav.dashboard': 'Dashboard',
+    'nav.forecast': 'Forecast',
+    'nav.favorites': 'Favourites',
+    'nav.alerts': 'Alerts',
+    'nav.admin': 'Admin',
+    'nav.profile': 'Profile',
+    'nav.logout': 'Log out',
+    'dashboard.title': 'Weather Forecast',
+    'dashboard.sub': 'Search any city and get detailed forecasts',
+    'dashboard.searchBtn': '🔍 Search',
+    'dashboard.searchPlaceholder': 'Search city...',
+    'dashboard.cityCards': 'Monitored Cities',
+    'dashboard.cityCardsSub': 'Data updated via OpenWeatherMap external API',
+    'dashboard.addCity': '+ Add City',
+    'forecast.title': 'Weekly Forecast',
+    'forecast.sub': 'Next 7 days for your cities',
+    'favorites.title': 'Favourite Cities',
+    'favorites.sub': 'Your saved cities',
+    'alerts.title': 'Weather Alerts',
+    'alerts.sub': 'Severe conditions notifications',
+    'alerts.add': '+ New Alert',
+    'admin.title': 'Administration Panel',
+    'admin.sub': 'User and system data management',
+    'admin.users': 'Registered Users',
+    'admin.searches': 'Recent Searches',
+    'profile.title': 'Profile & Settings',
+    'profile.sub': 'Manage your information and preferences',
+    'settings.personal': '👤 Personal Data',
+    'settings.security': '🔐 Security',
+    'settings.preferences': '⚙️ Preferences',
+    'settings.export': '📤 Export Data',
+    'settings.save': 'Save changes',
+    'settings.changePassword': 'Change password',
+    'stat.cities': 'Monitored cities',
+    'stat.favs': 'Favourites',
+    'stat.alerts': 'Active alerts',
+    'stat.days': 'Forecast days',
+    'export.csv': 'Export CSV',
+    'export.pdf': 'Export PDF',
+    'export.desc': 'Export your favourite cities data and search history.',
+    'modal.addCity': 'Add City',
+    'modal.cityName': 'City name',
+    'modal.country': 'Country',
+    'modal.cancel': 'Cancel',
+    'modal.add': 'Add',
+    'modal.newAlert': 'New Weather Alert',
+    'modal.alertCity': 'City',
+    'modal.alertType': 'Alert type',
+    'modal.alertThreshold': 'Threshold',
+    'modal.save': 'Save',
+    'pref.units': 'Temperature units',
+    'pref.lang': 'Preferred language',
+    'pref.theme': 'Theme',
+    'table.id': 'ID',
+    'table.name': 'Name',
+    'table.email': 'Email',
+    'table.role': 'Role',
+    'table.registered': 'Registered at',
+    'table.actions': 'Actions',
+    'table.city': 'City',
+    'table.user': 'User',
+    'table.date': 'Date',
+    'error.fillAll': 'Please fill in all fields.',
+    'error.invalidCredentials': 'Incorrect email or password.',
+    'error.passwordMismatch': 'Passwords do not match.',
+    'error.passwordShort': 'Password must be at least 6 characters.',
+    'error.emailExists': 'This email is already registered.',
+    'weather.humidity': 'Humidity',
+    'weather.wind': 'Wind',
+    'weather.feelsLike': 'Feels like',
+    'weather.pressure': 'Pressure',
+    'weather.visibility': 'Visibility',
+    'weather.favorite': '⭐ Favourite',
+    'weather.unfavorite': '★ Remove',
+    'weather.delete': '🗑️',
+    'forecast.label': '7-day forecast',
+    'alerts.delete': 'Remove',
+    'alerts.active': 'Active',
+  }
+};
+
+let currentLang = localStorage.getItem('sv_lang') || 'pt';
+
+function t(key) { return translations[currentLang][key] || translations['pt'][key] || key; }
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('sv_lang', lang);
+  document.documentElement.setAttribute('lang', lang);
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t(key);
+    else el.textContent = t(key);
+  });
+  renderAll();
+}
+
+/* ============================================================
+   THEME SERVICE
+============================================================ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('sv_theme', isDark ? 'light' : 'dark');
+  const pref = document.getElementById('pref-theme');
+  if (pref) pref.value = isDark ? 'light' : 'dark';
+}
+
+function applyTheme() {
+  const theme = localStorage.getItem('sv_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+/* ============================================================
+   PAGE & NAVIGATION ROUTING
+============================================================ */
+function showPage(id) {
+  document.querySelectorAll('.auth-page').forEach(p => p.style.display = 'none');
+  const p = document.getElementById(id);
+  if (p) { p.style.display = 'flex'; p.querySelector('.auth-card').style.animation = 'slideUp 0.4s ease'; }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  const tabEl = document.getElementById('tab-' + tab);
+  const secEl = document.getElementById('section-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  if (secEl) { secEl.classList.add('active'); renderSection(tab); }
+}
+
+function switchSettings(id) {
+  ['personal','security','preferences','export'].forEach(s => {
+    const el = document.getElementById('settings-' + s);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('settings-' + id);
+  if (target) target.style.display = 'block';
+  event.currentTarget.classList.add('active');
+}
+
+/* ============================================================
+   WEATHER DATA SERVICE — Simulates API calls to:
+   GET /api/weather/city.php?name={city}
+   GET /api/weather/forecast.php?city_id={id}
+============================================================ */
+const weatherConditions = [
+  { icon: '☀️', condition: 'Ensolarado', conditionEn: 'Sunny' },
+  { icon: '⛅', condition: 'Parcialmente nublado', conditionEn: 'Partly cloudy' },
+  { icon: '☁️', condition: 'Nublado', conditionEn: 'Cloudy' },
+  { icon: '🌧️', condition: 'Chuvoso', conditionEn: 'Rainy' },
+  { icon: '⛈️', condition: 'Trovoada', conditionEn: 'Thunderstorm' },
+  { icon: '🌤️', condition: 'Maioritariamente ensolarado', conditionEn: 'Mostly sunny' },
+  { icon: '🌦️', condition: 'Chuva ocasional', conditionEn: 'Occasional rain' }
+];
+
+function generateWeatherData(city = 'Luanda', country = 'Angola') {
+  const cond = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+  return {
+    name: city,
+    country: country,
+    temp: Math.round(15 + Math.random() * 20),
+    feelsLike: Math.round(13 + Math.random() * 22),
+    humidity: Math.round(40 + Math.random() * 50),
+    wind: Math.round(5 + Math.random() * 40),
+    pressure: Math.round(1005 + Math.random() * 20),
+    visibility: Math.round(5 + Math.random() * 20),
+    icon: cond.icon,
+    condition: cond.condition
+  };
+}
+
+function generateForecast(baseTemp) {
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const daysEn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const today = new Date().getDay();
+  return Array.from({length: 7}, (_, i) => {
+    const cond = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+    return {
+      dayPt: days[(today + i) % 7],
+      dayEn: daysEn[(today + i) % 7],
+      icon: cond.icon,
+      high: Math.round(baseTemp + (Math.random() * 8 - 4)),
+      low: Math.round(baseTemp - 6 + (Math.random() * 4 - 2)),
+      isToday: i === 0
+    };
+  });
+}
+
+/* ============================================================
+   SEARCH & CRUD OPERATIONS
+============================================================ */
+function searchCity() {
+  const input = document.getElementById('city-search');
+  const cityName = input.value.trim();
+  if (!cityName) return;
+
+  const existing = DB.find('cities', c => c.name.toLowerCase() === cityName.toLowerCase());
+  if (existing) { input.value = ''; renderSection('dashboard'); return; }
+
+  const weather = generateWeatherData(cityName, '—');
+  DB.insert('cities', weather);
+  DB.insert('search_log', { city: cityName, userId: currentUser.id, date: new Date().toLocaleString('pt-AO'), status: 'success' });
+  input.value = '';
+  renderSection('dashboard');
+}
+
+function openAddCityModal() {
+  document.getElementById('modal-add-city').classList.add('open');
+}
+
+function addCity() {
+  const name = document.getElementById('new-city-name').value.trim();
+  const country = document.getElementById('new-city-country').value.trim();
+  if (!name) return;
+  const weather = generateWeatherData(name, country || '—');
+  DB.insert('cities', weather);
+  closeModal('modal-add-city');
+  renderSection('dashboard');
+}
+
+function deleteCity(id) {
+  if (!confirm('Remover esta cidade?')) return;
+  DB.delete('cities', id);
+  DB.delete('favorites', id);
+  renderAll();
+}
+
+function toggleFavorite(id) {
+  const favs = DB.get('favorites');
+  if (favs.includes(id)) DB.set('favorites', favs.filter(f => f !== id));
+  else { favs.push(id); DB.set('favorites', favs); }
+  renderAll();
+  document.getElementById('stat-favs').textContent = DB.get('favorites').length;
+}
+
+/* ============================================================
+   RENDERING ENGINE — Component render functions
+============================================================ */
+function renderAll() {
+  renderSection('dashboard');
+  renderSection('forecast');
+  renderSection('favorites');
+  renderSection('alerts');
+  if (currentUser && currentUser.role === 'admin') renderSection('admin');
+  document.getElementById('stat-favs').textContent = DB.get('favorites').length;
+  document.getElementById('stat-cities').textContent = DB.get('cities').length;
+  document.getElementById('stat-alerts').textContent = DB.get('alerts').length;
+}
+
+function renderSection(section) {
+  switch(section) {
+    case 'dashboard': renderWeatherGrid(); break;
+    case 'forecast': renderForecast(); break;
+    case 'favorites': renderFavorites(); break;
+    case 'alerts': renderAlerts(); break;
+    case 'admin': renderAdmin(); break;
+    case 'profile': renderProfile(); break;
+  }
+}
+
+function renderWeatherCard(city, showFav = true) {
+  const favs = DB.get('favorites');
+  const isFav = favs.includes(city.id);
+  const units = localStorage.getItem('sv_units') || 'C';
+  const temp = units === 'F' ? Math.round(city.temp * 9/5 + 32) : city.temp;
+  const feels = units === 'F' ? Math.round(city.feelsLike * 9/5 + 32) : city.feelsLike;
+  const unit = units === 'F' ? '°F' : '°C';
+
+  return `
+    <div class="weather-card">
+      <div class="card-header">
+        <div>
+          <div class="city-name">${city.name}</div>
+          <div class="country">${city.country}</div>
+        </div>
+        <div class="weather-icon">${city.icon}</div>
+      </div>
+      <div class="temp-display">
+        <span class="temp-main">${temp}</span>
+        <span class="temp-unit">${unit}</span>
+      </div>
+      <div class="condition">${city.condition}</div>
+      <div class="weather-details">
+        <div class="detail-item"><span class="detail-label">${t('weather.humidity')}</span><span class="detail-value">${city.humidity}%</span></div>
+        <div class="detail-item"><span class="detail-label">${t('weather.wind')}</span><span class="detail-value">${city.wind} km/h</span></div>
+        <div class="detail-item"><span class="detail-label">${t('weather.feelsLike')}</span><span class="detail-value">${feels}${unit}</span></div>
+        <div class="detail-item"><span class="detail-label">${t('weather.pressure')}</span><span class="detail-value">${city.pressure} hPa</span></div>
+      </div>
+      <div class="card-actions">
+        ${showFav ? `<button class="btn btn-ghost btn-sm" onclick="toggleFavorite(${city.id})">${isFav ? t('weather.unfavorite') : t('weather.favorite')}</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="deleteCity(${city.id})" style="color:var(--danger);">${t('weather.delete')}</button>
+      </div>
+    </div>`;
+}
+
+function renderWeatherGrid() {
+  const grid = document.getElementById('weather-grid');
+  const cities = DB.get('cities');
+  if (!cities.length) { grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🏙️</div><p>Nenhuma cidade adicionada.</p></div>'; return; }
+  grid.innerHTML = cities.map(c => renderWeatherCard(c)).join('');
+}
+
+function renderForecast() {
+  const cities = DB.get('cities');
+  const container = document.getElementById('forecast-list');
+  if (!cities.length) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Adicione cidades para ver previsões.</p></div>'; return; }
+
+  container.innerHTML = cities.map(city => {
+    const forecast = generateForecast(city.temp);
+    const days = forecast.map(d => `
+      <div class="forecast-day ${d.isToday ? 'today' : ''}">
+        <span class="day-name">${currentLang === 'en' ? d.dayEn : d.dayPt}</span>
+        <span class="day-icon">${d.icon}</span>
+        <span class="day-high">${d.high}°</span>
+        <span class="day-low">${d.low}°</span>
+      </div>`).join('');
+
+    const temps = forecast.map(d => d.high);
+    const maxT = Math.max(...temps);
+    const bars = forecast.map((d, i) => {
+      const h = Math.round((d.high / maxT) * 80);
+      return `<div class="temp-bar-group">
+        <span class="temp-bar-val">${d.high}°</span>
+        <div class="temp-bar temp-bar-high" style="height:${h}px;"></div>
+        <span class="temp-bar-label">${currentLang === 'en' ? d.dayEn : d.dayPt}</span>
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="forecast-strip">
+        <h3>${city.icon} ${city.name}, ${city.country} — ${t('forecast.label')}</h3>
+        <div class="forecast-days">${days}</div>
+      </div>
+      <div class="chart-area">
+        <h3>${t('forecast.label').toUpperCase()}</h3>
+        <div class="temp-chart">${bars}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderFavorites() {
+  const favIds = DB.get('favorites');
+  const favCities = DB.get('cities').filter(c => favIds.includes(c.id));
+  const grid = document.getElementById('favorites-grid');
+  if (!favCities.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⭐</div><p>' + (currentLang === 'en' ? 'No favourite cities yet. Star a city from the dashboard.' : 'Nenhuma cidade favorita. Marque uma cidade como favorita no dashboard.') + '</p></div>';
+    return;
+  }
+  grid.innerHTML = favCities.map(c => renderWeatherCard(c)).join('');
+}
+
+function renderAlerts() {
+  const alerts = DB.get('alerts');
+  const container = document.getElementById('alerts-list');
+
+  const alertSelect = document.getElementById('alert-city');
+  if (alertSelect) {
+    const cities = DB.get('cities');
+    alertSelect.innerHTML = cities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  }
+
+  if (!alerts.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><p>' + (currentLang === 'en' ? 'No active alerts.' : 'Sem alertas activos.') + '</p></div>';
+    return;
+  }
+
+  container.innerHTML = alerts.map(a => `
+    <div class="alert-item ${a.severity}">
+      <div class="alert-info-block">
+        <div class="alert-title">${alertTypeIcon(a.type)} ${a.city} — ${alertTypeLabel(a.type)}</div>
+        <div class="alert-desc">${a.description} | ${a.threshold}</div>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center; flex-shrink:0;">
+        <span class="badge ${a.severity === 'critical' ? 'badge-red' : a.severity === 'warning' ? 'badge-amber' : 'badge-blue'}">${t('alerts.active')}</span>
+        <button class="btn btn-ghost btn-sm" onclick="deleteAlert(${a.id})" style="color:var(--danger);">${t('alerts.delete')}</button>
+      </div>
+    </div>`).join('');
+}
+
+function alertTypeIcon(type) {
+  const map = { chuva: '🌧️', vento: '💨', trovoada: '⛈️', calor: '🌡️', frio: '❄️' };
+  return map[type] || '⚠️';
+}
+
+function alertTypeLabel(type) {
+  const mapPt = { chuva: 'Chuva forte', vento: 'Vento forte', trovoada: 'Trovoada', calor: 'Calor extremo', frio: 'Frio extremo' };
+  const mapEn = { chuva: 'Heavy rain', vento: 'Strong wind', trovoada: 'Thunderstorm', calor: 'Extreme heat', frio: 'Extreme cold' };
+  return currentLang === 'en' ? (mapEn[type] || type) : (mapPt[type] || type);
+}
+
+function openAlertModal() {
+  renderAlerts();
+  document.getElementById('modal-alert').classList.add('open');
+}
+
+function addAlert() {
+  const city = document.getElementById('alert-city').value;
+  const type = document.getElementById('alert-type').value;
+  const threshold = document.getElementById('alert-threshold').value.trim();
+  if (!city || !threshold) return;
+  DB.insert('alerts', { city, type, description: alertTypeLabel(type), threshold, severity: 'warning', createdAt: new Date().toISOString().split('T')[0] });
+  closeModal('modal-alert');
+  renderSection('alerts');
+  document.getElementById('stat-alerts').textContent = DB.get('alerts').length;
+}
+
+function deleteAlert(id) {
+  DB.delete('alerts', id);
+  renderSection('alerts');
+  document.getElementById('stat-alerts').textContent = DB.get('alerts').length;
+}
+
+function renderAdmin() {
+  const users = DB.get('users');
+  const tbody = document.getElementById('admin-users-body');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>#${u.id}</td>
+      <td>${u.firstName} ${u.lastName}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${u.role === 'admin' ? 'badge-red' : 'badge-blue'}">${u.role}</span></td>
+      <td>${u.createdAt}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="deleteUser(${u.id})" style="color:var(--danger);" ${u.id === currentUser.id ? 'disabled' : ''}>🗑️</button>
+      </td>
+    </tr>`).join('');
+
+  const searches = DB.get('search_log');
+  const sbody = document.getElementById('admin-searches-body');
+  sbody.innerHTML = searches.slice(-10).reverse().map(s => {
+    const user = DB.find('users', u => u.id === s.userId) || { firstName: '—', lastName: '' };
+    return `<tr>
+      <td>${s.city}</td>
+      <td>${user.firstName} ${user.lastName}</td>
+      <td>${s.date}</td>
+      <td><span class="badge ${s.status === 'success' ? 'badge-green' : 'badge-red'}">${s.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteUser(id) {
+  if (id === currentUser.id) return;
+  if (!confirm('Remover utilizador?')) return;
+  DB.delete('users', id);
+  renderSection('admin');
+}
+
+function renderProfile() {
+  if (!currentUser) return;
+  document.getElementById('profile-firstname').value = currentUser.firstName;
+  document.getElementById('profile-lastname').value = currentUser.lastName;
+  document.getElementById('profile-email').value = currentUser.email;
+  const units = localStorage.getItem('sv_units') || 'C';
+  const lang = currentLang;
+  const theme = localStorage.getItem('sv_theme') || 'light';
+  const pu = document.getElementById('pref-units'); if(pu) pu.value = units;
+  const pl = document.getElementById('pref-lang'); if(pl) pl.value = lang;
+  const pt2 = document.getElementById('pref-theme'); if(pt2) pt2.value = theme;
+}
+
+function saveProfile() {
+  const fn = document.getElementById('profile-firstname').value.trim();
+  const ln = document.getElementById('profile-lastname').value.trim();
+  const email = document.getElementById('profile-email').value.trim();
+  if (!fn || !ln || !email) return;
+  DB.update('users', currentUser.id, { firstName: fn, lastName: ln, email });
+  currentUser = {...currentUser, firstName: fn, lastName: ln, email };
+  sessionStorage.setItem('sv_session', JSON.stringify(currentUser));
+  updateNavUser();
+  const el = document.getElementById('profile-alert');
+  el.style.display = 'block';
+  el.className = 'alert alert-success';
+  el.innerHTML = '✅ ' + (currentLang === 'en' ? 'Profile updated successfully.' : 'Perfil actualizado com sucesso.');
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function changePassword() {
+  const curr = document.getElementById('curr-pw').value;
+  const next = document.getElementById('new-pw').value;
+  const el = document.getElementById('security-alert');
+  if (!curr || !next) { el.style.display='block'; el.className='alert alert-warning'; el.textContent=t('error.fillAll'); return; }
+  if (currentUser.password !== curr) { el.style.display='block'; el.className='alert alert-warning'; el.textContent=t('error.invalidCredentials'); return; }
+  if (next.length < 6) { el.style.display='block'; el.className='alert alert-warning'; el.textContent=t('error.passwordShort'); return; }
+  DB.update('users', currentUser.id, { password: next });
+  currentUser.password = next;
+  sessionStorage.setItem('sv_session', JSON.stringify(currentUser));
+  el.style.display='block'; el.className='alert alert-success';
+  el.textContent='✅ ' + (currentLang === 'en' ? 'Password changed.' : 'Palavra-passe alterada.');
+  document.getElementById('curr-pw').value = '';
+  document.getElementById('new-pw').value = '';
+  setTimeout(() => el.style.display='none', 3000);
+}
+
+function savePref(key, value) {
+  localStorage.setItem('sv_' + key, value);
+  renderAll();
+}
+
+/* ============================================================
+   EXPORT SERVICE — CSV and PDF export
+   Simulates /api/export/csv.php and /api/export/pdf.php
+============================================================ */
+function exportCSV() {
+  const cities = DB.get('cities');
+  const headers = ['Cidade', 'País', 'Temperatura (°C)', 'Humidade (%)', 'Vento (km/h)', 'Sensação (°C)', 'Pressão (hPa)', 'Visibilidade (km)', 'Condição'];
+  const rows = cities.map(c => [c.name, c.country, c.temp, c.humidity, c.wind, c.feelsLike, c.pressure, c.visibility, c.condition]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'skyview_dados_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function exportPDF() {
+  const cities = DB.get('cities');
+  const date = new Date().toLocaleDateString('pt-AO');
+  const rows = cities.map(c => `
+    <tr>
+      <td>${c.name}</td><td>${c.country}</td>
+      <td>${c.icon} ${c.condition}</td>
+      <td>${c.temp}°C</td><td>${c.humidity}%</td>
+      <td>${c.wind} km/h</td><td>${c.pressure} hPa</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<style>
+body{font-family:Arial,sans-serif;margin:40px;color:#0F172A;}
+h1{color:#0369A1;font-size:22px;}
+.meta{color:#64748B;font-size:12px;margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;}
+th{background:#0369A1;color:white;padding:10px;text-align:left;font-size:12px;}
+td{padding:9px 10px;border-bottom:1px solid #E2E8F0;font-size:12px;}
+tr:nth-child(even) td{background:#F8FAFC;}
+.footer{margin-top:30px;font-size:11px;color:#94A3B8;text-align:center;}
+</style></head><body>
+<h1>🌤️ SkyView — Relatório de Previsão do Tempo</h1>
+<div class="meta">Gerado em: ${date} | Utilizador: ${currentUser.firstName} ${currentUser.lastName} | Sistema: IPIL 2025/2026</div>
+<table><thead><tr><th>Cidade</th><th>País</th><th>Condição</th><th>Temp.</th><th>Humidade</th><th>Vento</th><th>Pressão</th></tr></thead>
+<tbody>${rows}</tbody></table>
+<div class="footer">SkyView — Projecto #03 IPIL | Judson Paiva | judson.paiva@hotmail.com</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if (w) { w.onload = () => { w.print(); URL.revokeObjectURL(url); }; }
+}
+
+/* ============================================================
+   UTILITY FUNCTIONS
+============================================================ */
+function showError(el, msg) {
+  el.textContent = msg;
+  el.className = 'auth-error show';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function updateNavUser() {
+  if (!currentUser) return;
+  document.getElementById('nav-avatar').textContent = (currentUser.firstName[0] + currentUser.lastName[0]).toUpperCase();
+  document.getElementById('nav-username').textContent = currentUser.firstName;
+}
+
+/* ============================================================
+   APP INITIALISATION
+============================================================ */
+function initApp() {
+  document.querySelectorAll('.auth-page').forEach(p => p.style.display = 'none');
+  document.getElementById('app-layout').classList.add('active');
+  updateNavUser();
+
+  if (currentUser.role === 'admin') {
+    document.getElementById('tab-admin').style.display = 'block';
+  }
+
+  applyTheme();
+  setLanguage(currentLang);
+  renderAll();
+  switchTab('dashboard');
+}
+
+/* ============================================================
+   BOOT SEQUENCE
+============================================================ */
+seedDatabase();
+applyTheme();
+setLanguage(currentLang);
+document.getElementById('lang-selector').value = currentLang;
+
+const session = sessionStorage.getItem('sv_session');
+if (session) {
+  try {
+    currentUser = JSON.parse(session);
+    initApp();
+  } catch(e) {
+    showPage('page-login');
+  }
+} else {
+  showPage('page-login');
+}
+</script>
+</body>
+</html>
