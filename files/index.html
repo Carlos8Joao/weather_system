@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SkyView — Sistema de Previsão do Tempo</title>
+<title>C.J_View — Sistema de Previsão do Tempo</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 /*
- * SkyView — Sistema de Previsão do Tempo
+ * C.J_View — Sistema de Previsão do Tempo
  * Projecto #03 — IPIL 2025/2026
  * Autor: Judson Paiva | judson.paiva@hotmail.com
  * Stack: Angular (frontend) + PHP (backend) + MySQL (BD)
@@ -314,7 +314,7 @@ tbody tr:hover td{background:var(--surface2)}
 <!-- ════════════ ECRÃ LOGIN ════════════ -->
 <div id="S-login" class="screen auth-bg">
   <div class="auth-card">
-    <div class="auth-logo"><div class="ico">🌤️</div><div class="nm">Sky<span>View</span></div></div>
+    <div class="auth-logo"><div class="ico">🌤️</div><div class="nm">C.J_<span>View</span></div></div>
     <p class="auth-sub" id="t-lsub">Aceda à sua conta para continuar</p>
     <div class="ia ia-err" id="e-lerr"></div>
     <div class="fg"><label class="fl">E-mail</label>
@@ -328,14 +328,14 @@ tbody tr:hover td{background:var(--surface2)}
     <p class="auth-sw"><span id="t-lnew">Não tem conta?</span>
       <a onclick="goS('S-register')" id="t-lreg">Criar conta</a></p>
     <div class="demo"><strong>💡 Contas de demonstração</strong>
-      Admin: admin@skyview.ao / admin123<br>Utilizador: user@skyview.ao / user123</div>
+      Admin: admin@cjview.ao / admin123<br>Utilizador: user@cjview.ao / user123</div>
   </div>
 </div>
 
 <!-- ════════════ ECRÃ REGISTO ════════════ -->
 <div id="S-register" class="screen auth-bg">
   <div class="auth-card">
-    <div class="auth-logo"><div class="ico">🌤️</div><div class="nm">Sky<span>View</span></div></div>
+    <div class="auth-logo"><div class="ico">🌤️</div><div class="nm">C.J_<span>View</span></div></div>
     <p class="auth-sub" id="t-rsub">Crie a sua conta gratuitamente</p>
     <div class="ia ia-err" id="e-rerr"></div>
     <div class="frow">
@@ -360,7 +360,7 @@ tbody tr:hover td{background:var(--surface2)}
 <!-- ════════════ ECRÃ RECUPERAR ════════════ -->
 <div id="S-recover" class="screen auth-bg">
   <div class="auth-card">
-    <div class="auth-logo"><div class="ico">🔑</div><div class="nm">Sky<span>View</span></div></div>
+    <div class="auth-logo"><div class="ico">🔑</div><div class="nm">C.J_<span>View</span></div></div>
     <p class="auth-sub" id="t-recsub">Recuperação de palavra-passe</p>
     <div class="ia ia-info show" id="e-recinfo">Introduza o seu e-mail e receberá instruções para redefinir a palavra-passe.</div>
     <div class="ia ia-err" id="e-recerr"></div>
@@ -376,7 +376,7 @@ tbody tr:hover td{background:var(--surface2)}
 <!-- ════════════ APP ════════════ -->
 <div id="app">
   <nav class="navbar">
-    <div class="n-brand"><div class="bi">🌤️</div>Sky<span class="dot">View</span></div>
+    <div class="n-brand"><div class="bi">🌤️</div>C.J_<span class="dot">View</span></div>
     <div class="n-tabs">
       <button class="n-tab on" onclick="goP('dashboard',this)">Dashboard</button>
       <button class="n-tab" id="nt-fc" onclick="goP('forecast',this)">Previsão</button>
@@ -613,7 +613,7 @@ tbody tr:hover td{background:var(--surface2)}
 
 <script>
 /*
- * SkyView — Application Core
+ * C.J_View — Application Core
  * ─────────────────────────────────────────────────────────
  * DB Service      → localStorage (simula MySQL/PHP backend)
  * Auth Service    → /api/auth/{login,register,recover}.php
@@ -651,9 +651,9 @@ const DB = {
 
 // SEED — dados iniciais
 (function seedDB() {
-  if (DB.find('users', u => u.email === 'admin@skyview.ao')) return;
-  DB.insert('users', {id:1, fn:'Admin', ln:'Sistema', email:'admin@skyview.ao', pw:'admin123', role:'admin', created_at:'2025-01-01'});
-  DB.insert('users', {id:2, fn:'Judson', ln:'Paiva',   email:'user@skyview.ao',  pw:'user123',  role:'user',  created_at:'2025-01-15'});
+  if (DB.find('users', u => u.email === 'admin@cjview.ao')) return;
+  DB.insert('users', {id:1, fn:'Admin', ln:'Sistema', email:'admin@cjview.ao', pw:'admin123', role:'admin', created_at:'2025-01-01'});
+  DB.insert('users', {id:2, fn:'Judson', ln:'Paiva',   email:'user@cjview.ao',  pw:'user123',  role:'user',  created_at:'2025-01-15'});
   const cities = [
     {id:101,name:'Luanda',    country:'Angola',        temp:28,feels:31,hum:72,wind:18,press:1012,vis:10,icon:'⛅',cond:'Parcialmente nublado',condEn:'Partly cloudy'},
     {id:102,name:'Lisboa',    country:'Portugal',      temp:19,feels:18,hum:55,wind:12,press:1018,vis:20,icon:'☀️',cond:'Ensolarado',         condEn:'Sunny'},
@@ -690,6 +690,8 @@ const T = {
     'err.pwm':'As palavras-passe não coincidem.',
     'err.pws':'A palavra-passe deve ter pelo menos 6 caracteres.',
     'err.email':'Este e-mail já está registado.',
+    'err.emailfmt':'Por favor, introduza um endereço de e-mail válido (ex: nome@gmail.com).',
+    'err.gmailfmt':'O endereço Gmail deve estar no formato correcto: nome@gmail.com.',
     'err.emailnf':'E-mail não encontrado no sistema.',
     'err.city':'Por favor, introduza o nome da cidade.',
     'err.thresh':'Por favor, defina um limiar para o alerta.',
@@ -719,6 +721,8 @@ const T = {
     'err.pwm':'Passwords do not match.',
     'err.pws':'Password must be at least 6 characters.',
     'err.email':'This email is already registered.',
+    'err.emailfmt':'Please enter a valid email address (e.g. name@gmail.com).',
+    'err.gmailfmt':'Gmail addresses must follow the correct format: name@gmail.com.',
     'err.emailnf':'Email not found in the system.',
     'err.city':'Please enter the city name.',
     'err.thresh':'Please set a threshold for the alert.',
@@ -861,9 +865,20 @@ function doLogin() {
   const pw = (document.getElementById('l-pw').value||'').trim();
   hide('e-lerr');
   if (!em || !pw) { show('e-lerr','err', __('err.fill')); return; }
+  if (!isValidEmail(em)) { show('e-lerr','err', __('err.emailfmt')); return; }
   const u = DB.find('users', u => u.email.toLowerCase()===em && u.pw===pw);
   if (!u) { show('e-lerr','err', __('err.cred')); return; }
   loginSuccess(u);
+}
+
+function isValidEmail(em) {
+  // Validates proper email format: must have local part, @, and domain with TLD
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em);
+}
+
+function isGmailAddress(em) {
+  // Returns true if the user typed something with "gmail" but without the correct @gmail.com format
+  return em.includes('gmail') && !em.endsWith('@gmail.com');
 }
 
 function doRegister() {
@@ -874,8 +889,10 @@ function doRegister() {
   const pw2 = (document.getElementById('r-pw2').value||'').trim();
   hide('e-rerr');
   if (!fn||!ln||!em||!pw||!pw2) { show('e-rerr','err', __('err.fill')); return; }
-  if (pw !== pw2)    { show('e-rerr','err', __('err.pwm'));   return; }
-  if (pw.length < 6) { show('e-rerr','err', __('err.pws'));   return; }
+  if (!isValidEmail(em))         { show('e-rerr','err', __('err.emailfmt')); return; }
+  if (isGmailAddress(em))        { show('e-rerr','err', __('err.gmailfmt')); return; }
+  if (pw !== pw2)                { show('e-rerr','err', __('err.pwm'));   return; }
+  if (pw.length < 6)             { show('e-rerr','err', __('err.pws'));   return; }
   if (DB.find('users', u => u.email.toLowerCase()===em)) { show('e-rerr','err', __('err.email')); return; }
   const u = DB.insert('users', {fn, ln, email:em, pw, role:'user'});
   loginSuccess(u);
@@ -885,6 +902,7 @@ function doRecover() {
   const em = (document.getElementById('rec-em').value||'').trim().toLowerCase();
   hide('e-recerr'); hide('e-recok');
   if (!em) { show('e-recerr','err', __('err.fill')); return; }
+  if (!isValidEmail(em)) { show('e-recerr','err', __('err.emailfmt')); return; }
   if (!DB.find('users', u => u.email.toLowerCase()===em)) { show('e-recerr','err', __('err.emailnf')); return; }
   show('e-recok','ok', __('rec.ok'));
 }
@@ -1072,6 +1090,10 @@ function saveProfile() {
   const em = (document.getElementById('p-em').value||'').trim().toLowerCase();
   hide('e-palert');
   if (!fn||!ln||!em) { show('e-palert','err',__('err.fill')); return; }
+  if (!isValidEmail(em)) { show('e-palert','err',__('err.emailfmt')); return; }
+  if (isGmailAddress(em)) { show('e-palert','err',__('err.gmailfmt')); return; }
+  const existing = DB.find('users', u => u.email.toLowerCase()===em && u.id!==CU.id);
+  if (existing) { show('e-palert','err',__('err.email')); return; }
   DB.update('users', CU.id, {fn,ln,email:em});
   CU = {...CU, fn, ln, email:em};
   try { sessionStorage.setItem('sv3_cu',JSON.stringify(CU)); } catch(e) {}
@@ -1114,7 +1136,7 @@ function exportCSV() {
   const hd = ['Cidade','País','Temp (°C)','Sensação (°C)','Humidade (%)','Vento (km/h)','Pressão (hPa)','Visibilidade (km)','Condição'];
   const rows = cities.map(c => [c.name,c.country,c.temp,c.feels,c.hum,c.wind,c.press,c.vis, lang==='en'?(c.condEn||c.cond):c.cond]);
   const csv = [hd,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  dlBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}), `skyview_${today()}.csv`);
+  dlBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}), `cjview_${today()}.csv`);
 }
 
 function exportPDF() {
@@ -1132,11 +1154,11 @@ function exportPDF() {
   tr:nth-child(even)td{background:#f8fafc}
   .footer{margin-top:22px;font-size:10px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:10px}
   </style></head><body>
-  <h1>🌤️ SkyView — Relatório de Previsão do Tempo</h1>
+  <h1>🌤️ C.J_View — Relatório de Previsão do Tempo</h1>
   <div class="meta">Data: ${dt} &nbsp;|&nbsp; Utilizador: ${esc(CU.fn)} ${esc(CU.ln)} &nbsp;|&nbsp; IPIL Projecto #03 — 2025/2026</div>
   <table><thead><tr><th>Cidade</th><th>País</th><th>Condição</th><th>Temp.</th><th>Humidade</th><th>Vento</th><th>Pressão</th></tr></thead>
   <tbody>${rows}</tbody></table>
-  <div class="footer">SkyView &mdash; Judson Paiva | judson.paiva@hotmail.com &nbsp;|&nbsp; Instituto Politécnico Industrial de Luanda (IPIL)</div>
+  <div class="footer">C.J_View &mdash; Judson Paiva | judson.paiva@hotmail.com &nbsp;|&nbsp; Instituto Politécnico Industrial de Luanda (IPIL)</div>
   <script>window.onload=()=>setTimeout(window.print,500)<\/script>
   </body></html>`;
   const url = URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));

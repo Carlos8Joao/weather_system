@@ -1,14 +1,14 @@
 -- ============================================================
--- SkyView — Sistema de Previsão do Tempo
+-- C.J_View — Sistema de Previsão do Tempo
 -- Base de Dados: MySQL/MariaDB
 -- Projecto #03 — IPIL 2025/2026 | Judson Paiva
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS skyview_db
+CREATE DATABASE IF NOT EXISTS cjview_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE skyview_db;
+USE cjview_db;
 
 -- Tabela 1: Utilizadores (Autenticação + Perfis)
 CREATE TABLE IF NOT EXISTS users (
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS search_log (
 -- DADOS INICIAIS (Seed)
 -- ============================================================
 INSERT INTO users (first_name, last_name, email, password_hash, role) VALUES
-('Admin', 'Sistema', 'admin@skyview.ao', '$2y$10$exampleHashAdmin', 'admin'),
-('Judson', 'Paiva', 'user@skyview.ao', '$2y$10$exampleHashUser', 'user');
+('Admin', 'Sistema', 'admin@cjview.ao', '$2y$10$exampleHashAdmin', 'admin'),
+('Judson', 'Paiva', 'user@cjview.ao', '$2y$10$exampleHashUser', 'user');
 
 INSERT INTO cities (name, country, temp, feels_like, humidity, wind_speed, pressure, visibility, condition, icon_code) VALUES
 ('Luanda',     'Angola',        28.0, 31.0, 72, 18.0, 1012, 10, 'Parcialmente nublado', '02d'),
